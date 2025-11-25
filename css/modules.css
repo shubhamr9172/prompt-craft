@@ -222,3 +222,326 @@
     background: rgba(239, 68, 68, 0.1);
     box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
 }
+
+/* LLM Visualization Styles */
+.llm-viz-container {
+    padding: var(--space-xl) var(--space-lg);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.llm-viz-header {
+    text-align: center;
+    margin-bottom: var(--space-xl);
+}
+
+.llm-viz-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.llm-viz-header .subtitle {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+
+/* Scenario Selector */
+.llm-scenario-selector {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    padding: var(--space-lg);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-xl);
+}
+
+.llm-scenario-btn {
+    padding: 1rem 2rem;
+    background: rgba(59, 130, 246, 0.1);
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.llm-scenario-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.llm-scenario-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.llm-scenario-btn:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.llm-scenario-btn.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
+}
+
+.llm-scenario-btn span {
+    position: relative;
+    z-index: 1;
+}
+
+/* Split View */
+.llm-split-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: var(--space-lg);
+    min-height: 600px;
+}
+
+.llm-viz-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+.llm-viz-panel::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+}
+
+.llm-viz-panel:hover::before {
+    opacity: 1;
+}
+
+.llm-viz-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.panel-icon {
+    font-size: 2rem;
+}
+
+/* Output Box */
+.llm-output-box {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 200px;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #c9d1d9;
+    position: relative;
+    font-family: 'Courier New', monospace;
+}
+
+.llm-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 20px;
+    background: var(--primary);
+    margin-left: 2px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* World Panel */
+.llm-world-panel {
+    background: #000;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 1s ease-in-out;
+    background-size: cover;
+    background-position: center;
+    min-height: 300px;
+    position: relative;
+    overflow: hidden;
+}
+
+.llm-world-placeholder {
+    color: #4b5563;
+    font-size: 1.2rem;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Status Badge */
+.llm-status-badge {
+    display: inline-block;
+    padding: 0.7rem 1.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 30px;
+    color: var(--primary);
+    font-weight: 600;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.llm-status-badge.active {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: var(--success);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Controls */
+.llm-controls {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Info Cards */
+.llm-info-card {
+    background: rgba(59, 130, 246, 0.05);
+    border-left: 4px solid var(--primary);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+    line-height: 1.6;
+}
+
+.llm-info-card strong {
+    color: var(--primary);
+}
+
+/* Token Visualization */
+.llm-token {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    margin: 0.2rem;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    animation: tokenAppear 0.3s ease;
+}
+
+@keyframes tokenAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Probability Bars */
+.llm-prob-bar {
+    margin: 0.8rem 0;
+}
+
+.llm-prob-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+}
+
+.llm-prob-fill {
+    height: 8px;
+    background: rgba(59, 130, 246, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.llm-prob-value {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 10px;
+    transition: width 1s ease;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .llm-split-view {
+        grid-template-columns: 1fr;
+    }
+
+    .llm-viz-header h1 {
+        font-size: 2rem;
+    }
+
+    .llm-scenario-selector {
+        flex-direction: column;
+    }
+
+    .llm-viz-container {
+        padding: var(--space-md);
+    }
+}

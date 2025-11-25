@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding LLMs - Interactive Visualization</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%);
+            color: #e5e7eb;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(59, 130, 246, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        /* Header */
+        header {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 3rem 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 40px rgba(59, 130, 246, 0.5);
+        }
+
+        .subtitle {
+            color: #9ca3af;
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        /* Scenario Selector */
+        .scenario-selector {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .scenario-btn {
+            padding: 1rem 2rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: #3b82f6;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scenario-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .scenario-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .scenario-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .scenario-btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .scenario-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Split View */
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+            min-height: 600px;
+        }
+
+        /* Panel Styles */
+        .panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .panel:hover::before {
+            opacity: 1;
+        }
+
+        .panel-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #3b82f6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-icon {
+            font-size: 2rem;
+        }
+
+        /* Output Box */
+        .output-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 200px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #c9d1d9;
+            position: relative;
+            font-family: 'Courier New', monospace;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 20px;
+            background: #3b82f6;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* World Panel */
+        .world-panel {
+            background: #000;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            min-height: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .world-placeholder {
+            color: #4b5563;
+            font-size: 1.2rem;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 0.7rem 1.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 30px;
+            color: #3b82f6;
+            font-weight: 600;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-ask {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-ask:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-ask:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-reveal {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 5px 20px rgba(59, 130, 246, 0.3);
+            display: none;
+        }
+
+        .btn-reveal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-reset {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 2px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-reset:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: rgba(59, 130, 246, 0.05);
+            border-left: 4px solid #3b82f6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            line-height: 1.6;
+        }
+
+        .info-card strong {
+            color: #3b82f6;
+        }
+
+        /* Token Visualization */
+        .token {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            margin: 0.2rem;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            animation: tokenAppear 0.3s ease;
+        }
+
+        @keyframes tokenAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Probability Bars */
+        .prob-bar {
+            margin: 0.8rem 0;
+        }
+
+        .prob-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .prob-fill {
+            height: 8px;
+            background: rgba(59, 130, 246, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .prob-value {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 10px;
+            transition: width 1s ease;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .split-view {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .scenario-selector {
+                flex-direction: column;
+            }
+        }
+
+        /* Loading Animation */
+        .loading-dots {
+            display: inline-block;
+        }
+
+        .loading-dots span {
+            animation: blink 1.4s infinite;
+            animation-fill-mode: both;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <!-- Header -->
+    <header>
+        <h1>🤖 Understanding Large Language Models</h1>
+        <p class="subtitle">Interactive Visualizations of AI Concepts</p>
+    </header>
+
+    <!-- Scenario Selector -->
+    <div class="scenario-selector">
+        <button class="scenario-btn active" onclick="switchScenario('sunset')" data-scenario="sunset">
+            <span>🌅 The Librarian</span>
+        </button>
+        <button class="scenario-btn" onclick="switchScenario('tokens')" data-scenario="tokens">
+            <span>🔤 Token Prediction</span>
+        </button>
+        <button class="scenario-btn" onclick="switchScenario('context')" data-scenario="context">
+            <span>📚 Context Window</span>
+        </button>
+        <button class="scenario-btn" onclick="switchScenario('temperature')" data-scenario="temperature">
+            <span>🌡️ Temperature & Creativity</span>
+        </button>
+        <button class="scenario-btn" onclick="switchScenario('hallucination')" data-scenario="hallucination">
+            <span>⚠️ Hallucinations</span>
+        </button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="split-view" id="mainView">
+            <!-- Content will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // Background Animation
+        function createParticles() {
+            const container = document.getElementById('bgAnimation');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Scenarios Data
+        const scenarios = {
+            sunset: {
+                title: "The Librarian Analogy",
+                description: "LLMs don't 'experience' the world—they predict based on patterns in text.",
+                prompt: "Describe a sunset",
+                response: "The sun dips below the horizon, painting the sky in gradients of burning orange, bruised purple, and soft gold. Shadows lengthen across the earth as the warmth fades into the cool embrace of twilight...",
+                image: "https://images.unsplash.com/photo-1472120435266-53107fd0c44a?q=80&w=2070&auto=format&fit=crop",
+                info: "An LLM is like a librarian who has read millions of books but has never seen a sunset with their own eyes. They can describe it beautifully using patterns from text, but lack the actual sensory experience."
+            },
+            tokens: {
+                title: "Token Prediction",
+                description: "LLMs break text into tokens and predict the most likely next token.",
+                prompt: "The capital of France is",
+                response: "Paris",
+                tokens: ["The", "capital", "of", "France", "is", "Paris"],
+                probabilities: {
+                    "Paris": 85,
+                    "located": 8,
+                    "known": 4,
+                    "beautiful": 2,
+                    "other": 1
+                },
+                info: "Every word you see is the result of the model calculating probabilities for thousands of possible next tokens and choosing the most likely one. This happens for each token in the response!"
+            },
+            context: {
+                title: "Context Window",
+                description: "LLMs have limited memory—they can only 'see' a certain amount of recent text.",
+                prompt: "Remember this number: 42. Now tell me about quantum physics... [lots of text]... What was the number?",
+                response_with_context: "The number was 42!",
+                response_without_context: "I don't recall seeing a specific number mentioned.",
+                info: "Context windows are like short-term memory. Modern LLMs can remember 4,000-128,000 tokens, but beyond that, they 'forget' earlier parts of the conversation. This is why long conversations can lose coherence."
+            },
+            temperature: {
+                title: "Temperature & Creativity",
+                description: "Temperature controls randomness—low for precision, high for creativity.",
+                prompt: "Complete: Once upon a time",
+                low_temp: "Once upon a time, there was a king who ruled a prosperous kingdom.",
+                high_temp: "Once upon a time, a purple elephant danced on clouds made of marshmallows while singing opera to cosmic squirrels!",
+                info: "Temperature is like adjusting the 'creativity dial.' At temperature 0, the model always picks the most likely token (deterministic). At temperature 2.0, it takes more risks with unlikely tokens, creating wild and creative outputs!"
+            },
+            hallucination: {
+                title: "AI Hallucinations",
+                description: "LLMs can confidently state false information when they fill gaps with plausible-sounding text.",
+                prompt: "Tell me about the famous physicist Dr. Quantum McParticle",
+                response: "Dr. Quantum McParticle (1952-2018) was a renowned theoretical physicist who won the Nobel Prize in 2003 for his groundbreaking work on quantum entanglement...",
+                info: "This person doesn't exist! LLMs generate plausible-sounding text based on patterns, even if the facts are completely made up. Always verify critical information from reliable sources."
+            }
+        };
+
+        let currentScenario = 'sunset';
+        let isGenerating = false;
+
+        function switchScenario(scenarioName) {
+            if (isGenerating) return;
+
+            currentScenario = scenarioName;
+
+            // Update active button
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.scenario-btn').classList.add('active');
+
+            // Render scenario
+            renderScenario(scenarioName);
+        }
+
+        function renderScenario(scenarioName) {
+            const scenario = scenarios[scenarioName];
+            const mainView = document.getElementById('mainView');
+
+            switch (scenarioName) {
+                case 'sunset':
+                    mainView.innerHTML = `
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">🤖</span>
+                                <span>The LLM (Librarian)</span>
+                            </div>
+                            <div class="output-box">
+                                <span id="text-target"></span><span class="cursor"></span>
+                            </div>
+                            <div class="status-badge" id="status">Waiting for input...</div>
+                            <div class="controls">
+                                <button class="btn-ask" onclick="startSunsetDemo()">Ask: "${scenario.prompt}"</button>
+                                <button class="btn-reveal" id="revealBtn" onclick="showReality()">Show Reality</button>
+                                <button class="btn-reset" onclick="resetDemo()">Reset</button>
+                            </div>
+                            <div class="info-card">
+                                <strong>💡 Insight:</strong> ${scenario.info}
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">🌍</span>
+                                <span>Reality</span>
+                            </div>
+                            <div class="world-panel" id="world-panel">
+                                <div class="world-placeholder">Experience awaits...</div>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'tokens':
+                    mainView.innerHTML = `
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">🔤</span>
+                                <span>Token Breakdown</span>
+                            </div>
+                            <div class="output-box" style="min-height: 150px;">
+                                <div id="token-display" style="padding: 1rem;">Click "Generate" to see tokenization in action</div>
+                            </div>
+                            <div class="status-badge" id="status">Ready</div>
+                            <div class="controls">
+                                <button class="btn-ask" onclick="startTokenDemo()">Generate Response</button>
+                                <button class="btn-reset" onclick="resetDemo()">Reset</button>
+                            </div>
+                            <div class="info-card">
+                                <strong>💡 Insight:</strong> ${scenario.info}
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">📊</span>
+                                <span>Next Token Probabilities</span>
+                            </div>
+                            <div id="prob-display" style="padding: 1rem;">
+                                <p style="color: #9ca3af;">Probability distribution will appear here...</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'context':
+                    mainView.innerHTML = `
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">📚</span>
+                                <span>With Context</span>
+                            </div>
+                            <div class="output-box">
+                                <span id="text-target-1"></span><span class="cursor"></span>
+                            </div>
+                            <div class="status-badge" id="status-1">Ready</div>
+                            <div class="controls">
+                                <button class="btn-ask" onclick="startContextDemo(true)">Ask with Short Context</button>
+                            </div>
+                            <div class="info-card">
+                                <strong>💡 Result:</strong> The model remembers the number because it's within the context window!
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">❌</span>
+                                <span>Context Exceeded</span>
+                            </div>
+                            <div class="output-box">
+                                <span id="text-target-2"></span><span class="cursor"></span>
+                            </div>
+                            <div class="status-badge" id="status-2">Ready</div>
+                            <div class="controls">
+                                <button class="btn-ask" onclick="startContextDemo(false)">Ask with Long Context</button>
+                            </div>
+                            <div class="info-card">
+                                <strong>⚠️ Result:</strong> ${scenario.info}
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'temperature':
+                    mainView.innerHTML = `
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">❄️</span>
+                                <span>Low Temperature (0.2)</span>
+                            </div>
+                            <div class="output-box">
+                                <span id="text-target-low"></span><span class="cursor"></span>
+                            </div>
+                            <div class="status-badge" id="status-low">Precise & Predictable</div>
+                            <div class="controls">
+                                <button class="btn-ask" onclick="startTempDemo(true)">Generate (Low Temp)</button>
+                            </div>
+                            <div class="info-card">
+                                <strong>🎯 Use case:</strong> Factual answers, code generation, translations
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">🔥</span>
+                                <span>High Temperature (2.0)</span>
+                            </div>
+                            <div class="output-box">
+                                <span id="text-target-high"></span><span class="cursor"></span>
+                            </div>
+                            <div class="status-badge" id="status-high">Creative & Random</div>
+                            <div class="controls">
+                                <button class="btn-ask" onclick="startTempDemo(false)">Generate (High Temp)</button>
+                            </div>
+                            <div class="info-card">
+                                <strong>🎨 Use case:</strong> Creative writing, brainstorming, storytelling
+                            </div>
+                        </div>
+                    `;
+                    break;
+
+                case 'hallucination':
+                    mainView.innerHTML = `
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">⚠️</span>
+                                <span>AI-Generated Response</span>
+                            </div>
+                            <div class="output-box">
+                                <span id="text-target"></span><span class="cursor"></span>
+                            </div>
+                            <div class="status-badge" id="status">Ready</div>
+                            <div class="controls">
+                                <button class="btn-ask" onclick="startHallucinationDemo()">Ask About Fake Physicist</button>
+                                <button class="btn-reveal" id="revealBtn" onclick="revealHallucination()">Reveal Truth</button>
+                                <button class="btn-reset" onclick="resetDemo()">Reset</button>
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="panel-title">
+                                <span class="panel-icon">✅</span>
+                                <span>Fact Check</span>
+                            </div>
+                            <div id="fact-check" style="padding: 2rem; font-size: 1.1rem; line-height: 1.8;">
+                                <p style="color: #9ca3af;">Click "Reveal Truth" after generation...</p>
+                            </div>
+                            <div class="info-card">
+                                <strong>🛡️ Protection:</strong> ${scenario.info}
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // Demo Functions
+        function typeWriter(text, targetId, speed = 40, callback) {
+            const target = document.getElementById(targetId);
+            target.innerHTML = '';
+            let i = 0;
+
+            function type() {
+                if (i < text.length) {
+                    target.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            type();
+        }
+
+        function startSunsetDemo() {
+            isGenerating = true;
+            const scenario = scenarios.sunset;
+            const status = document.getElementById('status');
+            const revealBtn = document.getElementById('revealBtn');
+
+            status.innerText = 'Predicting next token...';
+            status.classList.add('active');
+            document.querySelector('.btn-ask').disabled = true;
+
+            typeWriter(scenario.response, 'text-target', 30, () => {
+                status.innerText = 'Generation complete ✓';
+                revealBtn.style.display = 'inline-block';
+                document.querySelector('.btn-ask').disabled = false;
+                isGenerating = false;
+            });
+        }
+
+        function showReality() {
+            const worldPanel = document.getElementById('world-panel');
+            const status = document.getElementById('status');
+            worldPanel.style.backgroundImage = `url('${scenarios.sunset.image}')`;
+            worldPanel.innerHTML = '';
+            status.innerText = 'Reality revealed - The actual sensory experience';
+        }
+
+        function startTokenDemo() {
+            isGenerating = true;
+            const scenario = scenarios.tokens;
+            const tokenDisplay = document.getElementById('token-display');
+            const probDisplay = document.getElementById('prob-display');
+            const status = document.getElementById('status');
+
+            status.innerText = 'Tokenizing...';
+            status.classList.add('active');
+
+            // Show tokens appearing one by one
+            tokenDisplay.innerHTML = '<div style="margin-bottom: 1rem; color: #9ca3af;">Prompt: "' + scenario.prompt + '"</div>';
+
+            let tokenHTML = '<div style="margin-top: 1rem;">';
+            scenario.tokens.forEach((token, index) => {
+                setTimeout(() => {
+                    tokenHTML += `<span class="token">${token}</span>`;
+                    tokenDisplay.innerHTML = '<div style="margin-bottom: 1rem; color: #9ca3af;">Prompt: "' + scenario.prompt + '"</div>' + tokenHTML + '</div>';
+
+                    if (index === scenario.tokens.length - 1) {
+                        // Show probabilities
+                        setTimeout(() => {
+                            let probHTML = '<h3 style="margin-bottom: 1.5rem; color: #3b82f6;">Calculating probabilities for "Paris"...</h3>';
+                            Object.entries(scenario.probabilities).forEach(([word, prob]) => {
+                                probHTML += `
+                                    <div class="prob-bar">
+                                        <div class="prob-label">
+                                            <span>${word}</span>
+                                            <span>${prob}%</span>
+                                        </div>
+                                        <div class="prob-fill">
+                                            <div class="prob-value" style="width: ${prob}%"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            probDisplay.innerHTML = probHTML;
+                            status.innerText = 'Complete ✓';
+                            isGenerating = false;
+                        }, 500);
+                    }
+                }, index * 200);
+            });
+        }
+
+        function startContextDemo(hasContext) {
+            isGenerating = true;
+            const scenario = scenarios.context;
+            const targetId = hasContext ? 'text-target-1' : 'text-target-2';
+            const statusId = hasContext ? 'status-1' : 'status-2';
+            const response = hasContext ? scenario.response_with_context : scenario.response_without_context;
+
+            const status = document.getElementById(statusId);
+            status.innerText = 'Processing...';
+            status.classList.add('active');
+
+            typeWriter(response, targetId, 40, () => {
+                status.innerText = hasContext ? 'Success ✓' : 'Context Lost ⚠️';
+                isGenerating = false;
+            });
+        }
+
+        function startTempDemo(lowTemp) {
+            isGenerating = true;
+            const scenario = scenarios.temperature;
+            const targetId = lowTemp ? 'text-target-low' : 'text-target-high';
+            const statusId = lowTemp ? 'status-low' : 'status-high';
+            const response = lowTemp ? scenario.low_temp : scenario.high_temp;
+
+            const status = document.getElementById(statusId);
+            status.innerText = 'Generating...';
+            status.classList.add('active');
+
+            typeWriter(response, targetId, lowTemp ? 30 : 50, () => {
+                status.innerText = 'Complete ✓';
+                isGenerating = false;
+            });
+        }
+
+        function startHallucinationDemo() {
+            isGenerating = true;
+            const scenario = scenarios.hallucination;
+            const status = document.getElementById('status');
+            const revealBtn = document.getElementById('revealBtn');
+
+            status.innerText = 'Generating response...';
+            status.classList.add('active');
+            document.querySelector('.btn-ask').disabled = true;
+
+            typeWriter(scenario.response, 'text-target', 35, () => {
+                status.innerText = 'Response generated ✓';
+                revealBtn.style.display = 'inline-block';
+                document.querySelector('.btn-ask').disabled = false;
+                isGenerating = false;
+            });
+        }
+
+        function revealHallucination() {
+            const factCheck = document.getElementById('fact-check');
+            factCheck.innerHTML = `
+                <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 12px; padding: 2rem;">
+                    <h2 style="color: #ef4444; margin-bottom: 1rem;">🚨 HALLUCINATION DETECTED!</h2>
+                    <p style="font-size: 1.2rem; margin-bottom: 1rem;">
+                        <strong>Dr. Quantum McParticle does NOT exist!</strong>
+                    </p>
+                    <p style="line-height: 1.8; color: #fca5a5;">
+                        This is a completely fabricated person. The LLM invented a plausible-sounding biography 
+                        because it recognized the pattern of "physicist" + "name" and filled in details based on 
+                        what similar real biographies look like.
+                    </p>
+                    <p style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(239, 68, 68, 0.3);">
+                        <strong>Always verify!</strong> LLMs can sound confident even when completely wrong.
+                    </p>
+                </div>
+            `;
+        }
+
+        function resetDemo() {
+            renderScenario(currentScenario);
+        }
+
+        // Initial render
+        renderScenario('sunset');
+    </script>
+</body>
+
+</html>

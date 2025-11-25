@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Galaxy | Zero-to-Hero Masterclass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Prism for Code Highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <!-- SortableJS for Drag and Drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
+    <style>
+        :root {
+            --bg-deep: #030305;
+            --bg-panel: #0f0f12;
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #06b6d4;
+            --success: #10b981;
+            --error: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --font-main: 'Inter', sans-serif;
+            --font-display: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) var(--bg-deep);
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .brand {
+            padding: 20px;
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-scroll {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .module-group {
+            margin-bottom: 20px;
+        }
+
+        .group-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 10px 10px 5px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .nav-item {
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        /* --- Split Layout --- */
+        .main-container {
+            flex-grow: 1;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            /* For progress bar positioning */
+        }
+
+        /* Left: Lesson Content (Scrollable) */
+        .lesson-pane {
+            width: 50%;
+            overflow-y: auto;
+            padding: 60px;
+            background: var(--bg-deep);
+            border-right: 1px solid var(--border);
+        }
+
+        .lesson-content {
+            max-width: 700px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            margin-bottom: 10px;
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            margin-top: 40px;
+            color: var(--accent-secondary);
+        }
+
+        p {
+            line-height: 1.7;
+            color: #ccc;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+        }
+
+        .analogy-box {
+            background: rgba(6, 182, 212, 0.1);
+            border-left: 4px solid var(--accent-secondary);
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .analogy-title {
+            font-weight: 700;
+            color: var(--accent-secondary);
+            margin-bottom: 10px;
+            display: block;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        /* Right: Visualization (Sticky) */
+        .viz-pane {
+            width: 50%;
+            background: #000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viz-header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+
+        .viz-canvas {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Interactive Components */
+        .interactive-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        button {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #7c3aed;
+        }
+
+        /* --- GAME STYLES --- */
+
+        /* Challenge Box */
+        .challenge-box {
+            margin-top: 50px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .challenge-title {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        /* Token Sorter */
+        .bucket-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .bucket {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 150px;
+            transition: all 0.2s;
+        }
+
+        .bucket.drag-over {
+            border-color: var(--accent-primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .word-item {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            cursor: grab;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        .word-item:active {
+            cursor: grabbing;
+        }
+
+        /* Semantic Matcher */
+        .match-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .match-card {
+            aspect-ratio: 1;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .match-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .match-card.selected {
+            border-color: var(--accent-secondary);
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        .match-card.matched {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* API Puzzle */
+        .code-lines {
+            min-height: 200px;
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #d4d4d4;
+            font-family: var(--font-mono);
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: grab;
+            border-left: 3px solid var(--accent-primary);
+        }
+
+        /* Feedback */
+        .feedback-msg {
+            margin-top: 15px;
+            font-weight: 600;
+            min-height: 24px;
+        }
+
+        .feedback-msg.success {
+            color: var(--success);
+        }
+
+        .feedback-msg.error {
+            color: var(--error);
+        }
+
+        /* Mobile */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .lesson-pane,
+            .viz-pane {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+            }
+
+            .viz-pane {
+                height: 500px;
+                order: -1;
+            }
+
+            /* Viz on top on mobile */
+            .sidebar {
+                display: none;
+            }
+
+            /* Hide sidebar on mobile for now */
+        }
+
+        /* --- Progress Bar --- */
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-primary);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--accent-primary);
+        }
+
+        /* --- Next Button --- */
+        .next-btn-container {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            text-align: right;
+        }
+
+        .next-btn {
+            background: var(--accent-secondary);
+            padding: 12px 24px;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .next-btn:hover {
+            background: #0891b2;
+        }
+
+        /* --- Quiz Styles --- */
+        .quiz-option {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--accent-primary);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .quiz-option.wrong {
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="sidebar">
+        <div class="brand">
+            <span>🚀</span> LLM Masterclass
+        </div>
+        <div class="nav-scroll">
+            <div class="module-group">
+                <div class="group-title">Phase 1: The Foundation</div>
+                <div class="nav-item active" onclick="loadModule(0)">1. The Big Picture</div>
+                <div class="nav-item" onclick="loadModule(1)">2. Tokenization</div>
+                <div class="nav-item" onclick="loadModule(2)">3. Embeddings</div>
+            </div>
+            <div class="module-group">
+                <div class="group-title">Phase 2: Mechanics</div>
+                <div class="nav-item" onclick="loadModule(3)">4. The Transformer</div>
+                <div class="nav-item" onclick="loadModule(4)">5. Self-Attention</div>
+                <div class="nav-item" onclick="loadModule(5)">6. Training & Fine-tuning</div>
+            </div>
+            <div class="module-group">
+                <div class="group-title">Phase 3: Job Ready</div>
+                <div class="nav-item" onclick="loadModule(6)">7. Prompt Engineering</div>
+                <div class="nav-item" onclick="loadModule(7)">8. RAG (Retrieval)</div>
+                <div class="nav-item" onclick="loadModule(8)">9. Building Apps (APIs)</div>
+            </div>
+            <div class="module-group">
+                <div class="group-title">Phase 4: Career Prep</div>
+                <div class="nav-item" onclick="loadModule(9)">10. Interview Prep</div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- Left: Text Content -->
+        <div class="lesson-pane" id="lesson-pane">
+            <div class="lesson-content" id="lesson-content">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <!-- Right: Visualization -->
+        <div class="viz-pane">
+            <div class="viz-header">
+                <span id="viz-title" style="font-family:var(--font-mono); color:var(--accent-secondary);">Interactive
+                    Module</span>
+                <button onclick="reloadViz()" style="padding:5px 10px; font-size:0.8rem;">Reset</button>
+            </div>
+            <div class="viz-canvas" id="viz-canvas">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONTENT DATABASE ---
+        // Contains lesson text and game config
+        const modules = [
+            {
+                title: "The Big Picture",
+                content: `
+                    <h1>How LLMs Actually Work</h1>
+                    <p>Welcome to the Zero-to-Hero Masterclass. Before we write code, we need to demystify what an LLM (Large Language Model) actually is.</p>
+                    <p>At its core, an LLM is a <strong>Next Token Prediction Machine</strong>. It doesn't "know" anything in the human sense. It simply calculates the statistical probability of what word comes next.</p>
+                    
+                    <div class="analogy-box">
+                        <span class="analogy-title">Analogy: The Super-Autocomplete</span>
+                        Imagine the autocomplete on your phone, but instead of training on your text messages, it trained on the entire internet. And instead of just looking at the last word, it looks at the last 100,000 words to understand context.
+                    </div>
+
+                    <h2>Why "Large"?</h2>
+                    <p>The "Large" refers to the number of <strong>Parameters</strong> (weights) in the neural network. GPT-4 has over a trillion parameters. These parameters are just numbers that the model adjusts during training to get better at predicting.</p>
+                    
+                    <div class="challenge-box">
+                        <div class="challenge-header">
+                            <span class="challenge-title">Challenge: Predict the Future</span>
+                            <span id="score-0">0/3</span>
+                        </div>
+                        <p>Click the most likely next word to complete the sentence.</p>
+                        <div id="game-0-container"></div>
+                        <div class="feedback-msg" id="feedback-0"></div>
+                    </div>
+                `,
+                vizType: "prediction",
+                vizTitle: "Next Token Prediction"
+            },
+            {
+                title: "Tokenization",
+                content: `
+                    <h1>Tokenization: The Language of Machines</h1>
+                    <p>Computers can't read text. They only understand numbers. <strong>Tokenization</strong> is the process of converting text into a list of integers.</p>
+                    <p>A "token" isn't always a word. It can be part of a word. Common words like "apple" are one token. Rare words like "antigravity" might be split into "anti" + "gravity".</p>
+
+                    <div class="analogy-box">
+                        <span class="analogy-title">Analogy: LEGO Bricks</span>
+                        Tokens are like LEGO bricks. You have a set of standard bricks (vocabulary). You can combine them to build any structure (sentence) you want.
+                    </div>
+
+                    <div class="challenge-box">
+                        <div class="challenge-header">
+                            <span class="challenge-title">Challenge: Token Sorter</span>
+                            <button onclick="checkTokenSort()">Check</button>
+                        </div>
+                        <p>Drag words into the correct bucket: <strong>1 Token</strong> (Common) or <strong>Multiple Tokens</strong> (Complex/Rare).</p>
+                        <div class="bucket-container">
+                            <div class="bucket" id="bucket-single">
+                                <div style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">Single Token</div>
+                            </div>
+                            <div class="bucket" id="bucket-multi">
+                                <div style="color:#aaa; font-size:0.8rem; margin-bottom:10px;">Multiple Tokens</div>
+                            </div>
+                        </div>
+                        <div id="word-pool" style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;"></div>
+                        <div class="feedback-msg" id="feedback-1"></div>
+                    </div>
+                `,
+                vizType: "token",
+                vizTitle: "Live Tokenizer"
+            },
+            {
+                title: "Embeddings",
+                content: `
+                    <h1>Embeddings: The Map of Meaning</h1>
+                    <p>Once we have tokens (numbers), we turn them into <strong>Embeddings</strong>. An embedding is a list of coordinates (a vector) that places the word in a multi-dimensional space.</p>
+                    <p>In this space, words with similar meanings are physically close together. "King" is close to "Queen". "Apple" is far from "Car".</p>
+
+                    <h2>Vector Arithmetic</h2>
+                    <p>The magic of embeddings is that you can do math with meaning:</p>
+                    <pre><code class="language-python">Vector("King") - Vector("Man") + Vector("Woman") ≈ Vector("Queen")</code></pre>
+
+                    <div class="challenge-box">
+                        <div class="challenge-header">
+                            <span class="challenge-title">Challenge: Semantic Matcher</span>
+                            <span id="score-2">Pairs Found: 0</span>
+                        </div>
+                        <p>Find pairs of words that are semantically related (close in vector space).</p>
+                        <div class="match-grid" id="match-grid"></div>
+                        <div class="feedback-msg" id="feedback-2"></div>
+                    </div>
+                `,
+                vizType: "embedding",
+                vizTitle: "3D Semantic Space"
+            },
+            {
+                title: "The Transformer",
+                content: `
+                    <h1>The Transformer Architecture</h1>
+                    <p>Released by Google in 2017 ("Attention Is All You Need"), this architecture changed AI forever. It allows models to process entire sentences at once (parallel) rather than word-by-word (sequential).</p>
+                    
+                    <h2>Key Components</h2>
+                    <ul>
+                        <li><strong>Encoder:</strong> Reads the input and understands it.</li>
+                        <li><strong>Decoder:</strong> Generates the output.</li>
+                    </ul>
+                    <p>GPT (Generative Pre-trained Transformer) is a <strong>Decoder-only</strong> model. It just generates.</p>
+
+                    <div class="analogy-box">
+                        <span class="analogy-title">Analogy: The Assembly Line</span>
+                        Imagine a car factory. The raw metal (tokens) passes through stations (layers). At each station, robots (attention heads) add specific details or adjustments until a finished car (response) comes out.
+                    </div>
+                `,
+                vizType: "transformer",
+                vizTitle: "Transformer Blueprint"
+            },
+            {
+                title: "Self-Attention",
+                content: `
+                    <h1>Self-Attention</h1>
+                    <p>This is the "brain" of the Transformer. It allows the model to look at other words in the sentence to understand the current word.</p>
+                    <p>Example: <em>"The animal didn't cross the street because <strong>it</strong> was too tired."</em></p>
+                    <p>To understand "it", the model must pay attention to "animal". If the sentence ended "too wide", "it" would refer to "street".</p>
+
+                    <div class="analogy-box">
+                        <span class="analogy-title">Analogy: The Cocktail Party</span>
+                        You are at a loud party. You hear many voices (words), but you focus your attention only on the person mentioning your name, filtering out the rest.
+                    </div>
+                `,
+                vizType: "attention",
+                vizTitle: "Attention Heatmap"
+            },
+            {
+                title: "Training & Fine-tuning",
+                content: `
+                    <h1>How Models Learn</h1>
+                    <p>Training happens in two main stages:</p>
+                    
+                    <h2>1. Pre-training (The expensive part)</h2>
+                    <p>The model reads terabytes of text (CommonCrawl, Wikipedia, GitHub). It learns grammar, facts, and reasoning by trying to predict the next word. This costs millions of dollars.</p>
+
+                    <h2>2. Fine-tuning (The specialization)</h2>
+                    <p>We take a pre-trained model and train it on a smaller, high-quality dataset (e.g., medical Q&A). This is much cheaper.</p>
+
+                    <h3>RLHF (Reinforcement Learning from Human Feedback)</h3>
+                    <p>This is how we make models "safe" and "helpful". Humans rate the model's answers, teaching it to be polite and avoid toxicity.</p>
+                `,
+                vizType: "finetune",
+                vizTitle: "Training Simulator"
+            },
+            {
+                title: "Prompt Engineering",
+                content: `
+                    <h1>Prompt Engineering</h1>
+                    <p>Now we get to the hands-on skills. Prompt Engineering is the art of guiding the model to the best output.</p>
+
+                    <h2>Techniques</h2>
+                    <ul>
+                        <li><strong>Zero-shot:</strong> Asking directly. "Translate this."</li>
+                        <li><strong>Few-shot:</strong> Giving examples. "Convert these: A->1, B->2. Now convert C."</li>
+                        <li><strong>Chain of Thought:</strong> Asking the model to "Think step by step". This drastically improves math and logic performance.</li>
+                    </ul>
+
+                    <div class="challenge-box">
+                        <div class="challenge-header">
+                            <span class="challenge-title">Challenge: Prompt Fixer</span>
+                            <button onclick="checkPromptFix()">Run Prompt</button>
+                        </div>
+                        <p><strong>Goal:</strong> Get the model to output ONLY a JSON object.</p>
+                        <p><strong>Current Prompt:</strong> "Give me a list of 3 fruits."</p>
+                        <div id="prompt-options" style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <!-- Injected -->
+                        </div>
+                        <div class="feedback-msg" id="feedback-6"></div>
+                    </div>
+                `,
+                vizType: "prompt",
+                vizTitle: "Prompt Playground"
+            },
+            {
+                title: "RAG (Retrieval Augmented Generation)",
+                content: `
+                    <h1>RAG: Giving the Model Memory</h1>
+                    <p>LLMs are frozen in time. They don't know about news that happened yesterday or your private company data. <strong>RAG</strong> solves this.</p>
+
+                    <h2>How it works</h2>
+                    <ol>
+                        <li><strong>Retrieve:</strong> Search your database for relevant documents.</li>
+                        <li><strong>Augment:</strong> Paste those documents into the prompt context.</li>
+                        <li><strong>Generate:</strong> Ask the LLM to answer using that context.</li>
+                    </ol>
+
+                    <div class="analogy-box">
+                        <span class="analogy-title">Analogy: Open Book Test</span>
+                        Without RAG, the LLM relies on memorization (pre-training). With RAG, you give it a textbook (your data) to look up the answer.
+                    </div>
+                `,
+                vizType: "rag",
+                vizTitle: "RAG Workflow"
+            },
+            {
+                title: "Building Apps (APIs)",
+                content: `
+                    <h1>Building Real Apps</h1>
+                    <p>To build a product, you don't use ChatGPT's website. You use the <strong>API</strong>.</p>
+
+                    <h2>The OpenAI API Format</h2>
+                    <p>Almost all modern LLMs (Claude, Mistral, Llama) use this standard format:</p>
+
+                    <pre><code class="language-python">import openai
+
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Write a poem about coding."}
+    ],
+    temperature=0.7
+)</code></pre>
+
+                    <div class="challenge-box">
+                        <div class="challenge-header">
+                            <span class="challenge-title">Challenge: API Puzzle</span>
+                            <button onclick="checkAPIPuzzle()">Run Code</button>
+                        </div>
+                        <p>Drag the lines of code into the correct order to make a working API call.</p>
+                        <div class="code-lines" id="api-puzzle-container">
+                            <!-- Injected -->
+                        </div>
+                        <div class="feedback-msg" id="feedback-8"></div>
+                    </div>
+                `,
+                vizType: "api",
+                vizTitle: "API Simulator"
+            },
+            {
+                title: "Interview Prep",
+                content: `
+                    <h1>Ace the LLM Interview</h1>
+                    <p>You've learned the mechanics. Now let's prepare for the questions you'll face in a Machine Learning Engineer interview.</p>
+
+                    <h2>Common Questions</h2>
+                    <div style="display:flex; flex-direction:column; gap:20px;">
+                        <details style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; cursor:pointer;">
+                            <summary style="font-weight:600; color:var(--accent-secondary);">What is the difference between Encoder and Decoder?</summary>
+                            <p style="margin-top:10px; margin-bottom:0; font-size:0.95rem;">Encoders (like BERT) are good at understanding text (classification, sentiment). Decoders (like GPT) are good at generating text. Encoders look at the whole sentence at once; Decoders generate one word at a time.</p>
+                        </details>
+                        <details style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; cursor:pointer;">
+                            <summary style="font-weight:600; color:var(--accent-secondary);">What is Temperature?</summary>
+                            <p style="margin-top:10px; margin-bottom:0; font-size:0.95rem;">Temperature controls randomness. Low temperature (0.1) makes the model deterministic and focused. High temperature (0.9) makes it creative and random.</p>
+                        </details>
+                        <details style="background:rgba(255,255,255,0.05); padding:15px; border-radius:8px; cursor:pointer;">
+                            <summary style="font-weight:600; color:var(--accent-secondary);">Explain "Hallucination".</summary>
+                            <p style="margin-top:10px; margin-bottom:0; font-size:0.95rem;">When an LLM confidently generates false information. It happens because the model is probabilistic, not a database of facts.</p>
+                        </details>
+                    </div>
+
+                    <div class="challenge-box">
+                        <div class="challenge-header">
+                            <span class="challenge-title">Final Exam</span>
+                            <span id="score-9">0/3 Correct</span>
+                        </div>
+                        <p>Select the correct answer for each question.</p>
+                        <div id="quiz-container">
+                            <!-- Injected -->
+                        </div>
+                        <div class="feedback-msg" id="feedback-9"></div>
+                    </div>
+                `,
+                vizType: "quiz",
+                vizTitle: "Knowledge Check"
+            }
+        ];
+
+        // --- RENDER LOGIC ---
+        let currentModule = 0;
+        let vizFrameId = null;
+        let selectedCards = [];
+
+        function cleanupViz() {
+            if (vizFrameId) {
+                cancelAnimationFrame(vizFrameId);
+                vizFrameId = null;
+            }
+            selectedCards = [];
+        }
+
+        function loadModule(index) {
+            cleanupViz();
+            currentModule = index;
+            const data = modules[index];
+
+            // Update Sidebar
+            document.querySelectorAll('.nav-item').forEach((el, i) => {
+                if (i === index) el.classList.add('active');
+                else el.classList.remove('active');
+            });
+
+            // Update Text
+            const contentPane = document.getElementById('lesson-content');
+            contentPane.innerHTML = data.content;
+
+            // Add Next Button
+            const nextBtnContainer = document.createElement('div');
+            nextBtnContainer.className = 'next-btn-container';
+
+            if (index < modules.length - 1) {
+                nextBtnContainer.innerHTML = `<button class="next-btn" onclick="nextModule()">Next Lesson <span>→</span></button>`;
+            } else {
+                nextBtnContainer.innerHTML = `<button class="next-btn" onclick="loadModule(0)" style="background:var(--success)">Restart Course <span>↺</span></button>`;
+            }
+            contentPane.appendChild(nextBtnContainer);
+
+            contentPane.parentElement.scrollTop = 0;
+            Prism.highlightAll();
+
+            // Update Progress Bar
+            const progress = ((index + 1) / modules.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+
+            // Init Game for this module
+            initGame(index);
+
+            // Update Viz
+            document.getElementById('viz-title').textContent = data.vizTitle;
+            loadViz(data.vizType);
+        }
+
+        function nextModule() {
+            if (currentModule < modules.length - 1) {
+                loadModule(currentModule + 1);
+            }
+        }
+
+        function reloadViz() {
+            loadViz(modules[currentModule].vizType);
+        }
+
+        // --- GAME ENGINES ---
+
+        // 1. Prediction Game
+        function initGame(index) {
+            if (index === 0) {
+                const container = document.getElementById('game-0-container');
+                const scenarios = [
+                    { q: "The quick brown fox jumps over the...", a: ["lazy", "moon", "fence"], correct: "lazy" },
+                    { q: "To be or not to...", a: ["be", "do", "see"], correct: "be" },
+                    { q: "May the force be with...", a: ["you", "us", "me"], correct: "you" }
+                ];
+                // Shuffle scenarios
+                const s = scenarios[Math.floor(Math.random() * scenarios.length)];
+
+                container.innerHTML = `
+                    <div style="font-size:1.2rem; margin-bottom:10px;">"${s.q}"</div>
+                    <div style="display:flex; gap:10px;">
+                        ${s.a.map(word => `<button onclick="checkPrediction('${word}', '${s.correct}')">${word}</button>`).join('')}
+                    </div>
+                `;
+            }
+            else if (index === 1) {
+                // Token Sorter
+                const pool = document.getElementById('word-pool');
+                const words = [
+                    { t: "apple", type: "single" }, { t: "the", type: "single" }, { t: "is", type: "single" },
+                    { t: "antigravity", type: "multi" }, { t: "unbelievable", type: "multi" }, { t: "microscope", type: "multi" }
+                ];
+                // Shuffle
+                words.sort(() => Math.random() - 0.5);
+
+                pool.innerHTML = '';
+                words.forEach(w => {
+                    const div = document.createElement('div');
+                    div.className = 'word-item';
+                    div.textContent = w.t;
+                    div.dataset.type = w.type;
+                    pool.appendChild(div);
+                });
+
+                // Init Sortable
+                new Sortable(pool, { group: 'tokens', animation: 150 });
+                new Sortable(document.getElementById('bucket-single'), { group: 'tokens', animation: 150 });
+                new Sortable(document.getElementById('bucket-multi'), { group: 'tokens', animation: 150 });
+            }
+            else if (index === 2) {
+                // Semantic Matcher
+                const grid = document.getElementById('match-grid');
+                const pairs = [
+                    ["King", "Queen"], ["Apple", "Banana"], ["Code", "Python"], ["Car", "Truck"]
+                ];
+                // Flatten and Shuffle
+                let cards = [];
+                pairs.forEach((p, i) => {
+                    cards.push({ txt: p[0], id: i });
+                    cards.push({ txt: p[1], id: i });
+                });
+                cards.sort(() => Math.random() - 0.5);
+
+                grid.innerHTML = '';
+                cards.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'match-card';
+                    div.textContent = c.txt;
+                    div.dataset.id = c.id;
+                    div.onclick = () => handleCardClick(div);
+                    grid.appendChild(div);
+                });
+            }
+            else if (index === 6) {
+                // Prompt Fixer
+                const container = document.getElementById('prompt-options');
+                const options = [
+                    { t: "Format: JSON", correct: true },
+                    { t: "Don't talk too much", correct: false },
+                    { t: "Output only the list", correct: true },
+                    { t: "Be nice", correct: false }
+                ];
+                options.sort(() => Math.random() - 0.5);
+
+                container.innerHTML = '';
+                options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'secondary';
+                    btn.textContent = opt.t;
+                    btn.dataset.correct = opt.correct;
+                    btn.onclick = () => {
+                        btn.classList.toggle('active');
+                        btn.style.background = btn.classList.contains('active') ? 'var(--accent-primary)' : 'transparent';
+                    };
+                    container.appendChild(btn);
+                });
+            }
+            else if (index === 8) {
+                // API Puzzle
+                const container = document.getElementById('api-puzzle-container');
+                const lines = [
+                    'import openai',
+                    'response = openai.ChatCompletion.create(',
+                    '    model="gpt-4",',
+                    '    messages=[{"role": "user", "content": "Hi"}]',
+                    ')'
+                ];
+                // Shuffle lines
+                let shuffled = lines.map((l, i) => ({ txt: l, order: i }));
+                shuffled.sort(() => Math.random() - 0.5);
+
+                container.innerHTML = '';
+                shuffled.forEach(l => {
+                    const div = document.createElement('div');
+                    div.className = 'code-block';
+                    div.textContent = l.txt;
+                    div.dataset.order = l.order;
+                    container.appendChild(div);
+                });
+
+                new Sortable(container, { animation: 150 });
+            }
+            else if (index === 9) {
+                // Interview Quiz
+                const container = document.getElementById('quiz-container');
+                const questions = [
+                    {
+                        q: "Which architecture does GPT use?",
+                        options: ["Encoder-only", "Decoder-only", "Encoder-Decoder"],
+                        correct: 1
+                    },
+                    {
+                        q: "What does RAG stand for?",
+                        options: ["Really Advanced Generation", "Retrieval Augmented Generation", "Random Access Generator"],
+                        correct: 1
+                    },
+                    {
+                        q: "High temperature results in...",
+                        options: ["More creative output", "More deterministic output", "Faster generation"],
+                        correct: 0
+                    }
+                ];
+
+                container.innerHTML = '';
+                questions.forEach((q, qIdx) => {
+                    const qDiv = document.createElement('div');
+                    qDiv.style.marginBottom = "20px";
+                    qDiv.innerHTML = `<div style="font-weight:600; margin-bottom:10px;">${qIdx + 1}. ${q.q}</div>`;
+
+                    q.options.forEach((opt, oIdx) => {
+                        const optDiv = document.createElement('div');
+                        optDiv.className = 'quiz-option';
+                        optDiv.textContent = opt;
+                        optDiv.onclick = () => checkQuiz(qDiv, optDiv, oIdx, q.correct);
+                        qDiv.appendChild(optDiv);
+                    });
+                    container.appendChild(qDiv);
+                });
+            }
+        }
+
+        // Game Logic Handlers
+        function checkPrediction(word, correct) {
+            const fb = document.getElementById('feedback-0');
+            if (word === correct) {
+                fb.textContent = "Correct! High probability.";
+                fb.className = "feedback-msg success";
+            } else {
+                fb.textContent = "Unlikely token. Try again.";
+                fb.className = "feedback-msg error";
+            }
+        }
+
+        function checkTokenSort() {
+            const single = document.getElementById('bucket-single').children;
+            const multi = document.getElementById('bucket-multi').children;
+            let correct = true;
+
+            for (let el of single) {
+                if (el.className.includes('word-item') && el.dataset.type !== 'single') correct = false;
+            }
+            for (let el of multi) {
+                if (el.className.includes('word-item') && el.dataset.type !== 'multi') correct = false;
+            }
+            const fb = document.getElementById('feedback-1');
+            if (correct && (single.length + multi.length > 2)) { // Ensure items moved
+                fb.textContent = "Perfect! You understand tokenization.";
+                fb.className = "feedback-msg success";
+            } else {
+                fb.textContent = "Some words are in the wrong bucket.";
+                fb.className = "feedback-msg error";
+            }
+        }
+
+        // selectedCards is now global
+        function handleCardClick(card) {
+            if (card.classList.contains('matched') || card.classList.contains('selected')) return;
+            if (selectedCards.length >= 2) return;
+
+            card.classList.add('selected');
+            selectedCards.push(card);
+
+            if (selectedCards.length === 2) {
+                const c1 = selectedCards[0];
+                const c2 = selectedCards[1];
+
+                if (c1.dataset.id === c2.dataset.id) {
+                    // Match
+                    setTimeout(() => {
+                        c1.classList.add('matched');
+                        c2.classList.add('matched');
+                        selectedCards = [];
+                        checkMatchWin();
+                    }, 500);
+                } else {
+                    // No Match
+                    setTimeout(() => {
+                        c1.classList.remove('selected');
+                        c2.classList.remove('selected');
+                        selectedCards = [];
+                    }, 1000);
+                }
+            }
+        }
+
+        function checkMatchWin() {
+            const matched = document.querySelectorAll('.matched').length;
+            const scoreEl = document.getElementById('score-2');
+            if (scoreEl) scoreEl.textContent = `Pairs Found: ${matched / 2}`;
+
+            if (matched === 8) {
+                const fb = document.getElementById('feedback-2');
+                fb.textContent = "All pairs found! Semantic space mastered.";
+                fb.className = "feedback-msg success";
+            }
+        }
+
+        function checkPromptFix() {
+            const btns = document.querySelectorAll('#prompt-options button.active');
+            let hasCorrect = false;
+            let hasWrong = false;
+
+            btns.forEach(b => {
+                if (b.dataset.correct === "true") hasCorrect = true;
+                if (b.dataset.correct === "false") hasWrong = true;
+            });
+
+            const fb = document.getElementById('feedback-6');
+            if (hasCorrect && !hasWrong) {
+                fb.textContent = "Output: { 'fruits': ['Apple', 'Banana', 'Orange'] }";
+                fb.className = "feedback-msg success";
+            } else {
+                fb.textContent = "Output: 'Here are some fruits... I hope you like them...' (Failed JSON format)";
+                fb.className = "feedback-msg error";
+            }
+        }
+
+        function checkAPIPuzzle() {
+            const blocks = document.querySelectorAll('.code-block');
+            let correct = true;
+            blocks.forEach((b, i) => {
+                if (parseInt(b.dataset.order) !== i) correct = false;
+            });
+
+            const fb = document.getElementById('feedback-8');
+            if (correct) {
+                fb.textContent = "Code runs successfully! Response received.";
+                fb.className = "feedback-msg success";
+            } else {
+                fb.textContent = "Syntax Error. Check the order.";
+                fb.className = "feedback-msg error";
+            }
+        }
+
+        function checkQuiz(qDiv, optDiv, selectedIdx, correctIdx) {
+            if (qDiv.classList.contains('answered')) return;
+            qDiv.classList.add('answered');
+
+            const options = qDiv.querySelectorAll('.quiz-option');
+            if (selectedIdx === correctIdx) {
+                optDiv.classList.add('correct');
+                // Update score
+                const scoreEl = document.getElementById('score-9');
+                let currentScore = parseInt(scoreEl.textContent.split('/')[0]);
+                scoreEl.textContent = `${currentScore + 1}/3 Correct`;
+
+                if (currentScore + 1 === 3) {
+                    const fb = document.getElementById('feedback-9');
+                    fb.textContent = "Congratulations! You are ready for the interview.";
+                    fb.className = "feedback-msg success";
+                }
+            } else {
+                optDiv.classList.add('wrong');
+                options[correctIdx].classList.add('correct'); // Show correct answer
+            }
+        }
+
+        // --- VISUALIZATION ENGINE ---
+        function loadViz(type) {
+            const canvas = document.getElementById('viz-canvas');
+            canvas.innerHTML = '';
+
+            if (type === 'token') {
+                canvas.innerHTML = `
+                    <div class="interactive-card">
+                        <p style="color:#aaa; margin-bottom:10px;">Type to see tokenization:</p>
+                        <input type="text" id="tok-input" value="Antigravity is amazing" style="width:100%; padding:15px; background:#000; border:1px solid #333; color:white; border-radius:6px; margin-bottom:20px;">
+                        <div id="tok-output" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+                    </div>
+                `;
+                initTokenViz();
+            } else if (type === 'embedding') {
+                canvas.innerHTML = '<div id="three-container" style="width:100%; height:100%;"></div>';
+                setTimeout(initThreeViz, 100);
+            } else if (type === 'prediction') {
+                canvas.innerHTML = `
+                    <div class="interactive-card">
+                        <div id="pred-text" style="font-family:monospace; font-size:1.2rem; margin-bottom:20px; min-height:60px;">The quick brown fox jumps over the...</div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="predictNext('dog')">dog (90%)</button>
+                            <button onclick="predictNext('lazy')">lazy (5%)</button>
+                            <button onclick="predictNext('moon')">moon (1%)</button>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'attention') {
+                canvas.innerHTML = `
+                    <div class="interactive-card">
+                        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:2px; width:300px; height:300px; margin:0 auto;">
+                            ${Array(25).fill(0).map(() => `<div style="background:rgba(139,92,246,${Math.random()}); width:100%; height:100%;"></div>`).join('')}
+                        </div>
+                        <p style="text-align:center; margin-top:10px; color:#aaa;">Attention Matrix Heatmap</p>
+                    </div>
+                `;
+            } else if (type === 'quiz') {
+                canvas.innerHTML = `
+                <div class="interactive-card" style="text-align:center;">
+                    <div style="font-size:5rem; margin-bottom:20px;">🎓</div>
+                    <h2>You're Ready!</h2>
+                    <p>You've completed the LLM Masterclass.</p>
+                    <p style="color:#aaa;">Good luck with your interviews!</p>
+                </div>
+            `;
+            } else {
+                canvas.innerHTML = `<div style="color:#555;">Interactive Module for ${type} loading...</div>`;
+            }
+        }
+
+        // Viz Logic: Tokenizer
+        function initTokenViz() {
+            const input = document.getElementById('tok-input');
+            const output = document.getElementById('tok-output');
+            const colors = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'];
+
+            const update = () => {
+                output.innerHTML = '';
+                const words = input.value.split(/(\s+)/);
+                let i = 0;
+                words.forEach(w => {
+                    if (!w) return;
+                    const span = document.createElement('span');
+                    span.textContent = w;
+                    span.style.background = colors[i % colors.length] + '44';
+                    span.style.padding = '5px 8px';
+                    span.style.borderRadius = '4px';
+                    span.style.border = `1px solid ${colors[i % colors.length]}`;
+                    output.appendChild(span);
+                    i++;
+                });
+            };
+            input.addEventListener('input', update);
+            update();
+        }
+
+        // Viz Logic: Prediction
+        function predictNext(word) {
+            const el = document.getElementById('pred-text');
+            el.textContent += " " + word;
+        }
+
+        // Viz Logic: Three.js
+        function initThreeViz() {
+            const container = document.getElementById('three-container');
+            if (!container) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            const geometry = new THREE.BufferGeometry();
+            const count = 500;
+            const pos = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * 10;
+            geometry.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            const material = new THREE.PointsMaterial({ color: 0x8b5cf6, size: 0.1 });
+            const points = new THREE.Points(geometry, material);
+            scene.add(points);
+            camera.position.z = 5;
+
+            function animate() {
+                vizFrameId = requestAnimationFrame(animate);
+                points.rotation.y += 0.002;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        // Init
+        loadModule(0);
+
+    </script>
+</body>
+
+</html>

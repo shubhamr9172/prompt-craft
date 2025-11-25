@@ -46,6 +46,12 @@ const App = {
             case 'playground':
                 UI.renderPlayground();
                 break;
+            case 'llm-concepts':
+                UI.renderLLMConcepts();
+                break;
+            case 'llm-galaxy':
+                UI.renderLLMGalaxy();
+                break;
             default:
                 UI.renderHome();
         }

@@ -108,6 +108,62 @@ const UI = {
         `;
     },
 
+    renderLLMConcepts: () => {
+        const content = Utils.el('#app-content');
+        content.innerHTML = `
+            <div class="llm-viz-container">
+                <!-- Header -->
+                <div class="llm-viz-header">
+                    <h1>🤖 Understanding Large Language Models</h1>
+                    <p class="subtitle">Interactive Visualizations of AI Concepts</p>
+                </div>
+
+                <!-- Scenario Selector -->
+                <div class="llm-scenario-selector">
+                    <button class="llm-scenario-btn active" data-scenario="sunset" onclick="LLMViz.switchScenario('sunset')">
+                        <span>🌅 The Librarian</span>
+                    </button>
+                    <button class="llm-scenario-btn" data-scenario="tokens" onclick="LLMViz.switchScenario('tokens')">
+                        <span>🔤 Token Prediction</span>
+                    </button>
+                    <button class="llm-scenario-btn" data-scenario="context" onclick="LLMViz.switchScenario('context')">
+                        <span>📚 Context Window</span>
+                    </button>
+                    <button class="llm-scenario-btn" data-scenario="temperature" onclick="LLMViz.switchScenario('temperature')">
+                        <span>🌡️ Temperature & Creativity</span>
+                    </button>
+                    <button class="llm-scenario-btn" data-scenario="hallucination" onclick="LLMViz.switchScenario('hallucination')">
+                        <span>⚠️ Hallucinations</span>
+                    </button>
+                </div>
+
+                <!-- Main Content -->
+                <div class="llm-split-view">
+                    <!-- Content will be dynamically loaded here -->
+                </div>
+            </div>
+        `;
+
+        // Initial render
+        setTimeout(() => {
+            const container = document.querySelector('.llm-split-view');
+            LLMViz.renderScenario('sunset', container);
+        }, 10);
+    },
+
+    renderLLMGalaxy: () => {
+        const content = Utils.el('#app-content');
+        content.innerHTML = `
+            <div style="width: 100%; height: calc(100vh - 80px); position: relative;">
+                <iframe 
+                    src="llm_galaxy.html" 
+                    style="width: 100%; height: 100%; border: none; display: block;"
+                    title="LLM Galaxy Masterclass"
+                ></iframe>
+            </div>
+        `;
+    },
+
     components: {
         moduleCard: (module) => {
             const isComplete = (Utils.store.get('promptcraft_progress') || {})[module.id];
