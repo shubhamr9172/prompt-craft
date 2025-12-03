@@ -40,6 +40,9 @@ const UI = {
         const module = MODULES_DATA.find(m => m.id === parseInt(id));
         if (!module) return UI.renderHome();
 
+        // Track module visit for progress
+        Progress.visitModule(module.id);
+
         const content = Utils.el('#app-content');
         content.innerHTML = `
             <div class="container animate-fade-in">

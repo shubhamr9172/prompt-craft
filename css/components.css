@@ -194,4 +194,200 @@ textarea:focus {
     border: 1px solid var(--border-color);
     color: var(--text-muted);
     background: rgba(255, 255, 255, 0.02);
+}/* Progress Tracking Styles */
+
+/* Global Progress Bar */
+.global-progress-container {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 2rem;
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 900;
+    transition: all var(--transition-fast);
+}
+
+.global-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.global-progress-fill {
+    height: 100%;
+    background: var(--gradient-main);
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 15px var(--primary-glow);
+    position: relative;
+}
+
+.global-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progress-percentage {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary);
+    min-width: 45px;
+    text-align: right;
+}
+
+/* Module Completion Badge */
+.module-card {
+    position: relative;
+}
+
+.completion-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #10B981, #059669);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 10;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.module-card.completed {
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Celebration Modal */
+.celebration-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.celebration-content {
+    background: var(--bg-card);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    text-align: center;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px var(--primary-glow);
+    animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0.5) rotate(-10deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.celebration-icon {
+    font-size: 6rem;
+    margin-bottom: 1rem;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.celebration-content h2 {
+    font-size: 2.5rem;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.celebration-content p {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .global-progress-container {
+        top: 70px;
+        padding: 0.5rem 1rem;
+    }
+
+    .completion-badge {
+        width: 30px;
+        height: 30px;
+        font-size: 1.2rem;
+    }
 }

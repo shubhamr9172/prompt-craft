@@ -1,10 +1,14 @@
 const App = {
     init: () => {
+        Progress.init(); // Initialize progress tracking
         App.router();
         window.addEventListener('hashchange', App.router);
         App.setupTheme();
         App.updateProgress();
         App.setupScrollReveal();
+
+        // Update progress UI after init
+        setTimeout(() => Progress.updateUI(), 100);
     },
 
     setupScrollReveal: () => {
@@ -144,8 +148,12 @@ const App = {
 
         const renderQuestion = () => {
             if (currentQ >= questions.length) {
-                // Quiz Complete
+                // Quiz Complete - Save score to progress
                 const passed = score === questions.length;
+
+                // Save quiz score using Progress system
+                Progress.saveQuizScore(moduleId, score, questions.length);
+
                 if (passed) engine.markModuleComplete(moduleId);
                 App.updateProgress();
 
